@@ -1,0 +1,115 @@
+:root {
+  --bg: #f3f5f9;
+  --card: #ffffff;
+  --text: #1c2333;
+  --muted: #6b7388;
+  --primary: #3b5bdb;
+  --primary-dark: #2f49b0;
+  --border: #d5dae6;
+  --error: #c92a2a;
+  --success-bg: #e6f6ec;
+  --success-text: #1b6b3a;
+  --error-bg: #fdecec;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 16px;
+}
+
+.card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--card);
+  border-radius: 14px;
+  padding: 28px 24px;
+  box-shadow: 0 8px 28px rgba(28, 35, 51, 0.08);
+}
+
+.card-header h1 { margin: 0 0 6px; font-size: 1.6rem; }
+.card-header p { margin: 0 0 22px; color: var(--muted); }
+
+.field { display: flex; flex-direction: column; margin-bottom: 18px; border: 0; padding: 0; }
+.field label, .field legend { font-weight: 600; margin-bottom: 6px; font-size: 0.95rem; }
+
+input[type="text"], input[type="email"], textarea {
+  width: 100%;
+  padding: 11px 12px;
+  font: inherit;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+input:focus, textarea:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+  border-color: var(--primary);
+}
+
+[aria-invalid="true"] { border-color: var(--error); }
+
+textarea { resize: vertical; }
+
+.rating-options { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.rating-option { position: relative; cursor: pointer; }
+.rating-option input { position: absolute; opacity: 0; }
+.rating-option span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+.rating-option input:checked + span {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.rating-option input:focus-visible + span {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.hint { margin: 8px 0 0; font-size: 0.85rem; color: var(--muted); }
+.error-text { margin: 6px 0 0; font-size: 0.85rem; color: var(--error); }
+
+button[type="submit"] {
+  width: 100%;
+  padding: 13px;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+button[type="submit"]:hover:not(:disabled) { background: var(--primary-dark); }
+button[type="submit"]:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.banner { margin-top: 16px; padding: 12px 14px; border-radius: 8px; font-size: 0.95rem; }
+.banner-success { background: var(--success-bg); color: var(--success-text); }
+.banner-error { background: var(--error-bg); color: var(--error); }
+
+@media (max-width: 480px) {
+  .card { padding: 22px 16px; }
+  .rating-option span { width: 42px; height: 42px; }
+}
