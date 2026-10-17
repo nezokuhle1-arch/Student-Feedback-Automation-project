@@ -1,0 +1,446 @@
+{
+  "name": "Student Feedback Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "feedback",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        288
+      ],
+      "id": "549a0d5f-1298-4938-911a-d6ee3c0eaa71",
+      "name": "Webhook",
+      "webhookId": "aedf5ccf-3810-4957-bdd8-765590f4e9be"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"message\": \"ok\" }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1552,
+        192
+      ],
+      "id": "c2230798-a5d0-485d-85da-7a1dccc0bbc1",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\nconst errors = [];\n\nconst required = [\"studentName\", \"email\", \"courseName\", \"rating\", \"message\"];\nfor (const field of required) {\n  if (body[field] === undefined || body[field] === null || String(body[field]).trim() === \"\") {\n    errors.push(`${field} is required`);\n  }\n}\n\nconst email = String(body.email || \"\").trim();\nif (email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {\n  errors.push(\"email is not valid\");\n}\n\nconst rating = Number(body.rating);\nif (body.rating !== undefined && body.rating !== \"\" &&\n    (!Number.isInteger(rating) || rating < 1 || rating > 5)) {\n  errors.push(\"rating must be a whole number from 1 to 5\");\n}\n\nreturn [{\n  json: {\n    isValid: errors.length === 0,\n    errors,\n    data: {\n      studentName: String(body.studentName || \"\").trim(),\n      email,\n      courseName: String(body.courseName || \"\").trim(),\n      rating,\n      message: String(body.message || \"\").trim(),\n    },\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        288
+      ],
+      "id": "b5ee5619-f7ae-4de4-b358-7829814e47c4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b2ca893e-00d0-4eba-b6cd-11fc81982a5c",
+              "leftValue": "={{ $json.isValid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        288
+      ],
+      "id": "c7caab44-ba2f-4c1e-8f52-e9761a9ee051",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ message: \"Invalid submission: \" + $json.errors.join(\", \") }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        384
+      ],
+      "id": "ab3d4612-da34-4b31-8dbb-a52ee0654849",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6c88b82e-a7de-41b1-9fd0-182c9c81ae3d",
+              "leftValue": "={{ $json.data.rating }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        192
+      ],
+      "id": "03587c1f-0d55-44cf-bdfe-36d3c23c4cbb",
+      "name": "Rating logic"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "09d987bb-35d6-40df-a55c-d7eb23ee86b5",
+              "name": "status",
+              "value": "Needs Attention",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        896,
+        96
+      ],
+      "id": "8be583fa-acb0-45fb-9f30-e2b975bc395a",
+      "name": "Marks Needs Attention"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "232297f8-f9c7-48f7-8574-edc43bf56e76",
+              "name": "status",
+              "value": "Positive",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        896,
+        288
+      ],
+      "id": "5e1fce88-2524-4e29-8bf8-5ea304e05dd5",
+      "name": "Mark Positive"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tBtc6YIGU5eAia0H02jwCBYz5V1bLVrWOv_Ju3AzOPg",
+          "mode": "list",
+          "cachedResultName": "Student Feedback Form",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tBtc6YIGU5eAia0H02jwCBYz5V1bLVrWOv_Ju3AzOPg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tBtc6YIGU5eAia0H02jwCBYz5V1bLVrWOv_Ju3AzOPg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $now }}",
+            "name": "={{ $json.data.studentName }}",
+            "email": "={{ $json.data.email }}",
+            "course": "={{ $json.data.courseName }}",
+            "rating": "={{ $json.data.rating }}",
+            "message": "={{ $json.data.message }}",
+            "status": "={{ $json.status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "course",
+              "displayName": "course",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rating",
+              "displayName": "rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        192
+      ],
+      "id": "caf393df-2ddb-4d97-b4d6-0dbe1acbae7e",
+      "name": "Student Feedback Data Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VmOq5yHcb2zyg0ic",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.email }}",
+        "subject": "Thank you for your feedback",
+        "emailType": "text",
+        "message": "=Hi {{ $('Webhook').item.json.body.studentName }}, thank you for your feedback! Your response has been received successfully.",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        192
+      ],
+      "id": "0562c7c0-7389-4d5e-949c-3283fb5ee16f",
+      "name": "Send a message",
+      "webhookId": "01976741-ea76-476b-b729-03f8225c8795",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "6yaVBrlEPt7lpnBy",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Rating logic",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rating logic": {
+      "main": [
+        [
+          {
+            "node": "Marks Needs Attention",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark Positive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marks Needs Attention": {
+      "main": [
+        [
+          {
+            "node": "Student Feedback Data Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Positive": {
+      "main": [
+        [
+          {
+            "node": "Student Feedback Data Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Student Feedback Data Sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "availableInMCP": false
+  },
+  "versionId": "d0d1e7bf-d161-4c5d-b673-211d7b401aea",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d9f82094a5a28d42e5de0a4fb67799f963927c4a72d41be2128eb2ecf16c71d0"
+  },
+  "nodeGroups": [],
+  "id": "xtOeKjaAwwxfdnJ1",
+  "tags": []
+}
